@@ -1,15 +1,16 @@
 import { supabase } from '../../src/lib/supabaseClient'
 
-export const revalidate = 30
+export const revalidate = 0;          // ISR 끄기
+export const dynamic = 'force-dynamic'; // 항상 동적 렌더
+export const fetchCache = 'force-no-store'; // fetch 캐시 금지
 
 export default async function CommunityPage() {
   let items: { id: number; title: string; content: string | null }[] = []
   try {
     const { data, error } = await supabase
       .from('posts')
-      .select('id,title,content')
-      .order('id', { ascending: false })
-      .limit(20)
+      .select('id,title,content,created_at')
+      .order('created_at', { ascending: false })
     if (error) throw error
     items = data || []
   } catch (e) {}
