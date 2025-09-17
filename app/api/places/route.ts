@@ -6,17 +6,23 @@ import { authOptions } from '../auth/[...nextauth]/options'
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-  const userId = (session.user as any).id
 
-  const { name, category, lat, lng, address } = await req.json()
+  const userId = (session.user as any).id
+  const body = await req.json()
+  const { name, category, lat, lng, address } = body
+
+  console.log("📌 Request Body:", body)   // 🔥 요청 값 찍기
 
   if (!name || lat === undefined || lng === undefined) {
-    return NextResponse.json({ error: 'Invalid data', body: { name, lat, lng } }, { status: 400 })
+    return NextResponse.json(
+      { error: "Invalid data", body },
+      { status: 400 }
+    )
   }
 
-  const { error } = await supabaseAdmin.from('places').insert({
+  const { error } = await supabaseAdmin.from("places").insert({
     name,
     category,
     lat: Number(lat),
@@ -26,9 +32,9 @@ export async function POST(req: Request) {
   })
 
   if (error) {
+    console.error("📌 Supabase Insert Error:", error)  // 🔥 에러 찍기
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
   return NextResponse.json({ ok: true })
 }
-

@@ -13,15 +13,23 @@ export default function NewPlacePage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!session) return signIn('kakao')
-const res = await fetch('/api/places', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const res = await fetch("/api/places", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     ...form,
     lat: Number(form.lat),
     lng: Number(form.lng),
   }),
 })
+
+const data = await res.json()
+console.log("📌 Response:", data)   // 🔥 서버 응답 찍기
+
+if (!res.ok) {
+  alert("에러: " + (data.error || "Unknown error"))
+  return
+}
     if (!res.ok) return alert('등록 실패')
     router.push('/places')
   }
