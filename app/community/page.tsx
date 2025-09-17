@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import { supabase } from '../../src/lib/supabaseClient'
+import WriteButton from './WriteButton'
+import { supabase } from '@/src/lib/supabaseClient'
 
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
@@ -13,13 +13,17 @@ export default async function CommunityPage() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-xl font-semibold">커뮤니티</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">커뮤니티</h2>
+        <WriteButton />
+      </div>
+
       <ul className="space-y-2">
-        {posts?.map(p => (
+        {posts?.map((p) => (
           <li key={p.id} className="border rounded p-3">
-            <Link href={`/community/${p.id}`} className="font-semibold hover:underline">
+            <a href={`/community/${p.id}`} className="font-semibold underline">
               {p.title}
-            </Link>
+            </a>
             <div className="text-sm text-gray-600">
               {new Date(p.created_at).toLocaleString()}
             </div>
