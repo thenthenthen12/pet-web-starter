@@ -8,12 +8,11 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as any).id
 
-  const body = await req.json()
-  const { name, category, lat, lng, address } = body
-  if (!name || !lat || !lng) return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
+  const { place_id, rating, content } = await req.json()
+  if (!place_id || !rating) return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
 
-  const { error } = await supabaseAdmin.from('places').insert({
-    name, category, lat, lng, address, user_id: userId
+  const { error } = await supabaseAdmin.from('place_reviews').insert({
+    place_id, rating, content, user_id: userId
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ ok: true })

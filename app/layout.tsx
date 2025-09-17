@@ -17,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/">홈</Link>
             <Link href="/places">지도</Link>
             <Link href="/community">커뮤니티</Link>
+            <Link href="/events">커뮤니티</Link>
             <HeaderAuthClient />
           </header>
           <main className="container p-4">{children}</main>
