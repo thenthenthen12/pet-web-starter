@@ -16,7 +16,6 @@ export default function MapWithMarkers({ places }: { places: Place[] }) {
     const key = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY
     if (!key) return
 
-    // 스크립트 로드
     const scriptId = 'kakao-map-sdk'
     if (!document.getElementById(scriptId)) {
       const script = document.createElement('script')
@@ -24,37 +23,49 @@ export default function MapWithMarkers({ places }: { places: Place[] }) {
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`
       script.async = true
       document.head.appendChild(script)
-      script.onload = setup
+      script.onload = () => {
+        // @ts-ignore
+        if (window.kakao && window.kakao.maps) {
+          // @ts-ignore
+          window.kakao.maps.load(initMap)
+        }
+      }
     } else {
-      setup()
+      // 이미 로드된 경우
+      // @ts-ignore
+      if (window.kakao && window.kakao.maps) {
+        // @ts-ignore
+        window.kakao.maps.load(initMap)
+      }
     }
 
-    function setup() {
-      // @ts-ignore
-      window.kakao.maps.load(() => {
-        const container = document.getElementById('map')
-        if (!container) return
-        // @ts-ignore
-        const map = new window.kakao.maps.Map(container, {
-          // 서울 시청 근처
-          center: new window.kakao.maps.LatLng(37.5665, 126.9780),
-          level: 7
-        })
+    function initMap() {
+      const container = document.getElementById('map')
+      if (!container) return
 
-        // 마커 찍기
-        places.forEach(p => {
-          // @ts-ignore
-          const pos = new window.kakao.maps.LatLng(Number(p.lat), Number(p.lng))
-          // @ts-ignore
-          const marker = new window.kakao.maps.Marker({ map, position: pos })
-          // @ts-ignore
-          const iw = new window.kakao.maps.InfoWindow({
-            content: `<div style="padding:6px 8px;max-width:220px"><b>${p.name}</b><br/>${p.address ?? ''}</div>`
-          })
-          // @ts-ignore
-          window.kakao.maps.event.addListener(marker, 'click', () => {
-            iw.open(map, marker)
-          })
+      // 중심좌표: 데이터 있으면 첫 장소 기준, 없으면 서울시청
+      const center = places.length
+        ? new window.kakao.maps.LatLng(Number(places[0].lat), Number(places[0].lng))
+        : new window.kakao.maps.LatLng(37.5665, 126.9780)
+
+      // @ts-ignore
+      const map = new window.kakao.maps.Map(container, {
+        center,
+        level: 7
+      })
+
+      // 마커 찍기
+      places.forEach(p => {
+        const pos = new window.kakao.maps.LatLng(Number(p.lat), Number(p.lng))
+        // @ts-ignore
+        const marker = new window.kakao.maps.Marker({ map, position: pos })
+        // @ts-ignore
+        const iw = new window.kakao.maps.InfoWindow({
+          content: `<div style="padding:6px 8px;max-width:220px"><b>${p.name}</b><br/>${p.address ?? ''}</div>`
+        })
+        // @ts-ignore
+        window.kakao.maps.event.addListener(marker, 'click', () => {
+          iw.open(map, marker)
         })
       })
     }
