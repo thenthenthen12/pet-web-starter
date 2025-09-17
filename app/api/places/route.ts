@@ -3,23 +3,27 @@ import { supabaseAdmin } from '../../../src/lib/supabaseAdmin'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/options'
 
+
+export async function GET() {
+  const { data, error } = await supabaseAdmin
+    .from("places")
+    .select("id,name,category,lat,lng,address,created_at")
+    .order("created_at", { ascending: false })
+    .limit(200)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ items: data ?? [] })
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const userId = (session.user as any).id
-  const body = await req.json()
-  const { name, category, lat, lng, address } = body
-
-  console.log("📌 Request Body:", body)   // 🔥 요청 값 찍기
+  const { name, category, lat, lng, address } = await req.json()
 
   if (!name || lat === undefined || lng === undefined) {
-    return NextResponse.json(
-      { error: "Invalid data", body },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 })
   }
 
   const { error } = await supabaseAdmin.from("places").insert({
@@ -28,13 +32,9 @@ export async function POST(req: Request) {
     lat: Number(lat),
     lng: Number(lng),
     address,
-    user_id: userId,
+    user_id: String(userId),
   })
 
-  if (error) {
-    console.error("📌 Supabase Insert Error:", error)  // 🔥 에러 찍기
-    return NextResponse.json({ error: error.message }, { status: 400 })
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ ok: true })
 }

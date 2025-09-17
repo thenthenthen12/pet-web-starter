@@ -6,37 +6,45 @@ import { useSession, signIn } from 'next-auth/react'
 export default function NewPlacePage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [form, setForm] = useState({
-    name: '', category: 'cafe', address: '', lat: '', lng: ''
-  })
+  const [form, setForm] = useState({ name:'', category:'cafe', address:'', lat:'', lng:'' })
+  const [saving, setSaving] = useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!session) return signIn('kakao')
-const res = await fetch("/api/places", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    ...form,
-    lat: Number(form.lat),
-    lng: Number(form.lng),
-  }),
-})
 
-const data = await res.json()
-console.log("📌 Response:", data)   // 🔥 서버 응답 찍기
+    setSaving(true)
+    const res = await fetch('/api/places', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ...form,
+        lat: Number(form.lat),
+        lng: Number(form.lng),
+      })
+    })
 
-if (!res.ok) {
-  alert("에러: " + (data.error || "Unknown error"))
-  return
-}
-    if (!res.ok) return alert('등록 실패')
+    let data: any = null
+    try {
+      data = await res.json()
+    } catch { /* 빈 바디 방지 */ }
+
+    setSaving(false)
+
+    if (!res.ok) {
+      alert('등록 실패: ' + (data?.error ?? '알 수 없는 오류'))
+      return
+    }
+
+    alert('등록되었습니다!')
     router.push('/places')
+    router.refresh()
   }
 
   return (
     <form onSubmit={submit} className="space-y-3 max-w-md">
       <h2 className="text-xl font-semibold">장소 등록</h2>
+
       <input className="w-full border p-2 rounded" placeholder="이름"
              value={form.name} onChange={e=>setForm(s=>({...s,name:e.target.value}))} required />
       <select className="w-full border p-2 rounded"
@@ -54,8 +62,11 @@ if (!res.ok) {
         <input className="border p-2 rounded" placeholder="경도(lng)"
                value={form.lng} onChange={e=>setForm(s=>({...s,lng:e.target.value}))} required />
       </div>
-      <button className="px-4 py-2 rounded bg-orange-500 text-white">등록</button>
-      <p className="text-sm text-gray-500">※ 지도에서 좌표 찍는 UI는 다음 단계에 붙일게!</p>
+
+      <button disabled={saving}
+              className="px-4 py-2 rounded bg-orange-500 text-white disabled:opacity-60">
+        {saving ? '등록 중...' : '등록'}
+      </button>
     </form>
   )
 }
