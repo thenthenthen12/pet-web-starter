@@ -1,5 +1,5 @@
 import WriteButton from './WriteButton'
-import { supabase } from '@/src/lib/supabaseClient'
+import { supabase } from '../../src_lib/supabaseClient'
 
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
