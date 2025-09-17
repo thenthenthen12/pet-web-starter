@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from 'react'
-
+import Link from 'next/link'
 export default function PlacesPage() {
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY
